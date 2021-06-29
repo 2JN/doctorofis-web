@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
+import { Provider } from 'react-redux'
 
 import axios from '../lib/axios'
+import store from '../lib/redux/store'
 import '../styles/globals.css'
 
 function MyApp({ Component, pageProps }) {
@@ -10,7 +12,11 @@ function MyApp({ Component, pageProps }) {
         localStorage.getItem('auth-token')
   }, [])
 
-  return <Component {...pageProps} />
+  return (
+    <Provider store={store}>
+      <Component {...pageProps} />
+    </Provider>
+  )
 }
 
 export default MyApp

@@ -1,11 +1,6 @@
-/* This example requires Tailwind CSS v2.0+ */
 import Link from 'next/link'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { MenuIcon, XIcon } from '@heroicons/react/outline'
-
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
-}
 
 export default function Example() {
   return (
@@ -49,7 +44,7 @@ export default function Example() {
                     </a>
                   </Link>
                   <div className="py-3">
-                    <Link href="/signup">
+                    <Link href="/plans">
                       <a className="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white capitalize bg-indigo-600 hover:bg-indigo-700">
                         crear cuenta
                       </a>
@@ -90,14 +85,14 @@ export default function Example() {
               </a>
             </div>
             <div className="pt-4 p-3 border-t border-gray-200">
-              <Link href="/sign_up">
+              <Link href="/plans">
                 <a className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base capitalize font-medium text-white bg-indigo-600 hover:bg-indigo-700">
                   crear cuenta
                 </a>
               </Link>
               <p className="mt-2 text-center text-base font-medium text-gray-500">
                 Ya estas registrado? &nbsp;
-                <Link href="#">
+                <Link href="/login">
                   <a className="text-indigo-600 capitalize hover:text-indigo-500">
                     iniciar sesión
                   </a>

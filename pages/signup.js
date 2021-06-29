@@ -1,32 +1,57 @@
-import { useState } from 'react'
+import Link from 'next/link'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import { useDispatch, useSelector } from 'react-redux'
 
 import axios from '../lib/axios'
 import Nav from '../components/nav'
+import { setSubscriber } from '../lib/redux/slices/subscription'
 
 export default function SignUp() {
   const router = useRouter()
+  const subscriber = useSelector((state) => state.subscription.subscriber)
+  const dispatch = useDispatch()
   const [states, setStates] = useState({
     data: [],
     loading: true,
   })
 
-  axios
-    .get('/states')
-    .then((res) => {
-      if (res.status !== 200) throw new Error('Wrong response from server')
+  useEffect(() => {
+    axios
+      .get('/states')
+      .then((res) => {
+        if (res.status !== 200) throw new Error('Wrong response from server')
 
-      setStates({
-        data: res.data,
-        loading: false,
+        setStates({
+          data: res.data,
+          loading: false,
+        })
       })
-    })
-    .catch((err) => {
-      console.error(err)
-    })
+      .catch((err) => {
+        console.error(err)
+      })
+  }, [])
 
   const handleSubmit = (event) => {
     event.preventDefault()
+
+    const state = states.data.find(
+      (state) => state.id == event.target.state.value
+    )
+
+    dispatch(
+      setSubscriber({
+        firstName: event.target.firstName.value,
+        lastName: event.target.lastName.value,
+        email: event.target.email.value,
+        streetAddress: event.target.streetAddress.value,
+        city: event.target.city.value,
+        state: state,
+        zip: event.target.zip.value,
+        phone: event.target.phone.value,
+        phone2: event.target.phone2.value,
+      })
+    )
 
     router.push('/payment')
   }
@@ -50,17 +75,18 @@ export default function SignUp() {
               <div className="space-y-6 sm:space-y-5">
                 <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
                   <label
-                    htmlFor="first_name"
+                    htmlFor="firstName"
                     className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
                   >
                     Nombre
                   </label>
                   <div className="mt-1 sm:mt-0 sm:col-span-2">
                     <input
+                      id="firstName"
                       type="text"
-                      name="first_name"
-                      id="first_name"
+                      name="firstName"
                       autoComplete="given-name"
+                      defaultValue={subscriber.firstName}
                       className="max-w-lg block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
                     />
                   </div>
@@ -68,7 +94,7 @@ export default function SignUp() {
 
                 <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
                   <label
-                    htmlFor="last_name"
+                    htmlFor="lastName"
                     className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
                   >
                     Apellido
@@ -76,9 +102,10 @@ export default function SignUp() {
                   <div className="mt-1 sm:mt-0 sm:col-span-2">
                     <input
                       type="text"
-                      name="last_name"
-                      id="last_name"
+                      name="lastName"
+                      id="lastName"
                       autoComplete="family-name"
+                      defaultValue={subscriber.lastName}
                       className="max-w-lg block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
                     />
                   </div>
@@ -97,6 +124,7 @@ export default function SignUp() {
                       name="email"
                       type="email"
                       autoComplete="email"
+                      defaultValue={subscriber.email}
                       className="max-w-lg block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
                     />
                   </div>
@@ -104,17 +132,18 @@ export default function SignUp() {
 
                 <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
                   <label
-                    htmlFor="street_address"
+                    htmlFor="streetAddress"
                     className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
                   >
                     Dirección
                   </label>
                   <div className="mt-1 sm:mt-0 sm:col-span-2">
                     <input
+                      id="streetAddress"
                       type="text"
-                      name="street_address"
-                      id="street_address"
+                      name="streetAddress"
                       autoComplete="street-address"
+                      defaultValue={subscriber.streetAddress}
                       className="max-w-lg block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
                     />
                   </div>
@@ -129,9 +158,10 @@ export default function SignUp() {
                   </label>
                   <div className="mt-1 sm:mt-0 sm:col-span-2">
                     <input
+                      id="city"
                       type="text"
                       name="city"
-                      id="city"
+                      defaultValue={subscriber.city}
                       className="max-w-lg block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
                     />
                   </div>
@@ -139,16 +169,17 @@ export default function SignUp() {
 
                 <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
                   <label
-                    htmlFor="country"
+                    htmlFor="state"
                     className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
                   >
                     Departamento
                   </label>
                   <div className="mt-1 sm:mt-0 sm:col-span-2">
                     <select
-                      id="country"
-                      name="country"
-                      autoComplete="country"
+                      id="state"
+                      name="state"
+                      autoComplete="state"
+                      defaultValue={subscriber.state}
                       className="max-w-lg block focus:ring-indigo-500 focus:border-indigo-500 w-full shadow-sm sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
                     >
                       {states.data.map((state) => (
@@ -162,16 +193,17 @@ export default function SignUp() {
 
                 <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
                   <label
-                    htmlFor="city"
+                    htmlFor="zip"
                     className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
                   >
                     Código postal/ZIP
                   </label>
                   <div className="mt-1 sm:mt-0 sm:col-span-2">
                     <input
+                      id="zip"
                       type="text"
-                      name="city"
-                      id="city"
+                      name="zip"
+                      defaultValue={subscriber.zip}
                       className="max-w-lg block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
                     />
                   </div>
@@ -190,6 +222,7 @@ export default function SignUp() {
                       name="phone"
                       type="tel"
                       autoComplete="phone"
+                      defaultValue={subscriber.phone}
                       className="max-w-lg block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
                     />
                   </div>
@@ -208,6 +241,7 @@ export default function SignUp() {
                       name="phone2"
                       type="tel"
                       autoComplete="phone"
+                      defaultValue={subscriber.phone2}
                       className="max-w-lg block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
                     />
                   </div>
@@ -215,7 +249,7 @@ export default function SignUp() {
 
                 <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
                   <label
-                    htmlFor="id_front"
+                    htmlFor="idFront"
                     className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
                   >
                     DPI (frente)
@@ -239,13 +273,13 @@ export default function SignUp() {
                         </svg>
                         <div className="flex text-sm text-gray-600">
                           <label
-                            htmlFor="id_front"
+                            htmlFor="idFront"
                             className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
                           >
                             <span>Upload a file</span>
                             <input
-                              id="id_front"
-                              name="id_front"
+                              id="idFront"
+                              name="idFront"
                               type="file"
                               className="sr-only"
                             />
@@ -262,7 +296,7 @@ export default function SignUp() {
 
                 <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
                   <label
-                    htmlFor="id_back"
+                    htmlFor="idBack"
                     className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
                   >
                     DPI (dorso)
@@ -286,13 +320,13 @@ export default function SignUp() {
                         </svg>
                         <div className="flex text-sm text-gray-600">
                           <label
-                            htmlFor="id_back"
+                            htmlFor="idBack"
                             className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
                           >
                             <span>Upload a file</span>
                             <input
-                              id="id_back"
-                              name="id_back"
+                              id="idBack"
+                              name="idBack"
                               type="file"
                               className="sr-only"
                             />
@@ -312,12 +346,11 @@ export default function SignUp() {
 
           <div className="pt-5">
             <div className="flex justify-end">
-              <button
-                type="button"
-                className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Cancelar
-              </button>
+              <Link href="/plans">
+                <a className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  Volver
+                </a>
+              </Link>
               <button
                 type="submit"
                 className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
