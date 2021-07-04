@@ -44,7 +44,7 @@ export default function SignUp() {
         firstName: event.target.firstName.value,
         lastName: event.target.lastName.value,
         email: event.target.email.value,
-        streetAddress: event.target.streetAddress.value,
+        address: event.target.address.value,
         city: event.target.city.value,
         state: state,
         zip: event.target.zip.value,
@@ -132,18 +132,18 @@ export default function SignUp() {
 
                 <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
                   <label
-                    htmlFor="streetAddress"
+                    htmlFor="address"
                     className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
                   >
                     Dirección
                   </label>
                   <div className="mt-1 sm:mt-0 sm:col-span-2">
                     <input
-                      id="streetAddress"
+                      id="address"
                       type="text"
-                      name="streetAddress"
+                      name="address"
                       autoComplete="street-address"
-                      defaultValue={subscriber.streetAddress}
+                      defaultValue={subscriber.address}
                       className="max-w-lg block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
                     />
                   </div>
