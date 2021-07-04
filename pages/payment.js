@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import isEmpty from 'lodash/isEmpty'
 import clsx from 'clsx'
 
 import Nav from '../components/nav'
@@ -11,48 +12,58 @@ import { setPaymentCode } from '../lib/redux/slices/subscription'
 export default function Payment() {
   const router = useRouter()
   const [state, setState] = useState({
-    loading: false,
+    loading: true,
     data: {},
   })
   const dispatch = useDispatch()
+  const subscription = useSelector((state) => state.subscription)
 
   useEffect(() => {
-    const jsPaymentClient = new TwoPayClient(
-      process.env.NEXT_PUBLIC_2CHECKOUT_MERCHANT_CODE
-    )
-    jsPaymentClient.setup.setLanguage('es')
+    if (isEmpty(subscription.plan) || isEmpty(subscription.subscriber))
+      router.push('/signup')
+    else {
+      setState((prevState) => ({
+        ...prevState,
+        loading: false,
+      }))
 
-    const component = jsPaymentClient.components.create('card', styles2payjs)
-    component.mount(`#${styles.cardElement}`)
+      const jsPaymentClient = new TwoPayClient(
+        process.env.NEXT_PUBLIC_2CHECKOUT_MERCHANT_CODE
+      )
+      jsPaymentClient.setup.setLanguage('es')
 
-    document
-      .getElementById('payment-form')
-      ?.addEventListener('submit', async (event) => {
-        event.preventDefault()
-        setState((prevState) => ({
-          ...prevState,
-          loading: true,
-        }))
+      const component = jsPaymentClient.components.create('card', styles2payjs)
+      component.mount(`#${styles.cardElement}`)
 
-        const billingDetails = {
-          name: document.querySelector('#name').value,
-        }
+      document
+        .getElementById('payment-form')
+        ?.addEventListener('submit', async (event) => {
+          event.preventDefault()
+          setState((prevState) => ({
+            ...prevState,
+            loading: true,
+          }))
 
-        const res = await jsPaymentClient.tokens
-          .generate(component, billingDetails)
-          .catch((err) => {
-            console.error(err)
-            setState((prevState) => ({
-              ...prevState,
-              loading: false,
-            }))
+          const billingDetails = {
+            name: document.querySelector('#name').value,
+          }
 
-            // TODO: show errors
-          })
+          const res = await jsPaymentClient.tokens
+            .generate(component, billingDetails)
+            .catch((err) => {
+              console.error(err)
+              setState((prevState) => ({
+                ...prevState,
+                loading: false,
+              }))
 
-        dispatch(setPaymentCode(res.token))
-        router.push('/checkout')
-      })
+              // TODO: show errors
+            })
+
+          dispatch(setPaymentCode(res.token))
+          router.push('/checkout')
+        })
+    }
   }, [])
 
   const handleChange = (e) => {
