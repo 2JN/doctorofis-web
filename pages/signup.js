@@ -53,7 +53,7 @@ export default function SignUp() {
       })
     )
 
-    router.push('/payment')
+    router.push('/beneficiaries')
   }
 
   return (

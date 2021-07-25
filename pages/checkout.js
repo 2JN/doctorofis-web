@@ -26,6 +26,7 @@ export default function Checkout() {
     const subRes = await axios
       .post('/subscribers', {
         ...subscription.subscriber,
+        beneficiary: subscription.beneficiaries,
         eesToken: subscription.paymentCode,
         productCode: subscription.plan.productCode,
       })
@@ -95,6 +96,21 @@ export default function Checkout() {
                     }}
                   />
                 </div>
+              </dl>
+
+              <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                <h4 className="mt-8 text-md text-gray-500 sm:mt-5 sm:col-span-2">
+                  Beneficiarios
+                </h4>
+
+                {subscription.beneficiaries.map(({ name }, i) => (
+                  <div key={i} className="sm:col-span-1">
+                    <dt className="text-sm font-medium text-gray-500"></dt>
+                    <dd className="mt-1 text-sm capitalize text-gray-900">
+                      {name}
+                    </dd>
+                  </div>
+                ))}
               </dl>
 
               <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">

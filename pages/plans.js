@@ -22,6 +22,7 @@ export default function Plans() {
       setPlan({
         name: plan.Translations.ES.Name,
         productCode: plan.ProductCode,
+        productVersion: plan.ProductVersion,
         description: plan.Translations.ES.Description,
       })
     )
