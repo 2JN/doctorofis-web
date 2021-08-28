@@ -19,7 +19,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      class={clsx(
+      className={clsx(
         styles.sidebar,
         'min-h-screen border-r border-gray-200 bg-white'
       )}
@@ -32,7 +32,7 @@ export default function Sidebar() {
         <MenuAlt2Icon className="h-6 w-6" aria-hidden="true" />
       </button>
 
-      <nav class="mt-5 px-2">
+      <nav className="mt-5 px-2">
         <a
           href="/profile"
           className={clsx(
@@ -51,7 +51,7 @@ export default function Sidebar() {
             )}
             aria-hidden="true"
           />
-          {isExpanded && <span class="ml-3">Perfil</span>}
+          {isExpanded && <span className="ml-3">Perfil</span>}
         </a>
       </nav>
     </aside>

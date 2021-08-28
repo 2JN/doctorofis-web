@@ -10,7 +10,7 @@ export default function Profile() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main class="flex">
+      <main className="flex">
         <Sidebar />
 
         <section>

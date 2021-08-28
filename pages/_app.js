@@ -7,6 +7,20 @@ import '../styles/globals.css'
 
 function MyApp({ Component, pageProps }) {
   useEffect(() => {
+    axios.interceptors.response.use(
+      (res) => {
+        return res
+      },
+      (err) => {
+        if (err.response.status === 401) {
+          localStorage.removeItem('auth-token')
+          delete axios.defaults.headers.common['Authorization']
+        }
+
+        return Promise.reject(err)
+      }
+    )
+
     if (localStorage.getItem('auth-token'))
       axios.defaults.headers.common['Authorization'] =
         localStorage.getItem('auth-token')
