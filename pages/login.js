@@ -2,7 +2,7 @@ import { useRouter } from 'next/router'
 import { useDispatch } from 'react-redux'
 
 import axios from '../lib/axios'
-import { setUser } from '../lib/redux/slices/user'
+import { setUserData } from '../lib/redux/slices/user'
 
 export default function LogIn() {
   const dispatch = useDispatch()
@@ -19,9 +19,9 @@ export default function LogIn() {
       .then((res) => {
         console.log(res.data)
 
-        localStorage.setItem('auth-token', res.data.jwt)
+        localStorage.setItem('auth-token', `Bearer ${res.data.jwt}`)
 
-        dispatch(setUser(res.data.user))
+        dispatch(setUserData(res.data.user))
         router.push({
           pathname: '/profile',
         })
