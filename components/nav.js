@@ -2,7 +2,11 @@ import Link from 'next/link'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { MenuIcon, XIcon } from '@heroicons/react/outline'
 
+import { useSelector } from 'react-redux'
+
 export default function Example() {
+  const user = useSelector((state) => state.user)
+
   return (
     <Disclosure as="nav" className="bg-white shadow-sm">
       {({ open }) => (
@@ -35,21 +39,33 @@ export default function Example() {
                   >
                     nuestros servicios
                   </a>
-                  <Link href="/login">
-                    <a
-                      href="/login"
-                      className="border-transparent text-gray-500 capitalize hover:text-gray-700 hover:border-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                    >
-                      iniciar sesión
-                    </a>
-                  </Link>
-                  <div className="py-3">
-                    <Link href="/plans">
-                      <a className="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white capitalize bg-indigo-600 hover:bg-indigo-700">
-                        crear cuenta
-                      </a>
-                    </Link>
-                  </div>
+                  {!user.data.subscriber?.firstName ? (
+                    <>
+                      <Link href="/login">
+                        <a
+                          href="/login"
+                          className="border-transparent text-gray-500 capitalize hover:text-gray-700 hover:border-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                        >
+                          iniciar sesión
+                        </a>
+                      </Link>
+                      <div className="py-3">
+                        <Link href="/plans">
+                          <a className="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white capitalize bg-indigo-600 hover:bg-indigo-700">
+                            crear cuenta
+                          </a>
+                        </Link>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="py-3">
+                      <Link href="/profile">
+                        <a className="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white capitalize bg-indigo-600 hover:bg-indigo-700">
+                          Mi Cuenta
+                        </a>
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </div>
 

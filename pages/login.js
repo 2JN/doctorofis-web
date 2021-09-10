@@ -17,8 +17,6 @@ export default function LogIn() {
         password: event.target.password.value,
       })
       .then((res) => {
-        console.log(res.data)
-
         localStorage.setItem('auth-token', `Bearer ${res.data.jwt}`)
 
         dispatch(setUserData(res.data.user))

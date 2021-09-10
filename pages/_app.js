@@ -1,16 +1,52 @@
+import { useEffect } from 'react'
 import { Provider } from 'react-redux'
 
-import withInitialLoad from '../components/initial-load'
+import axios from '../lib/axios'
+import { setUserData, setUserLoad } from '../lib/redux/slices/user'
 
 import store from '../lib/redux/store'
 import '../styles/globals.css'
 
 function MyApp({ Component, pageProps }) {
-  const ComponentWithInitialLoad = withInitialLoad(Component)
+  useEffect(() => {
+    axios.interceptors.response.use(
+      (res) => {
+        return res
+      },
+      (err) => {
+        if (err.response.status === 401) {
+          localStorage.removeItem('auth-token')
+          delete axios.defaults.headers.common['Authorization']
+        }
+
+        return Promise.reject(err)
+      }
+    )
+
+    if (localStorage.getItem('auth-token')) {
+      axios.defaults.headers.common['Authorization'] =
+        localStorage.getItem('auth-token')
+
+      store.dispatch(setUserLoad(true))
+
+      axios
+        .get('/users/me')
+        .then((res) => {
+          store.dispatch(setUserData(res.data))
+        })
+        .catch((err) => {
+          console.error(err)
+
+          store.dispatch(setUserLoad(false))
+        })
+    } else {
+      store.dispatch(setUserLoad(false))
+    }
+  }, [])
 
   return (
     <Provider store={store}>
-      <ComponentWithInitialLoad {...pageProps} />
+      <Component {...pageProps} />
     </Provider>
   )
 }

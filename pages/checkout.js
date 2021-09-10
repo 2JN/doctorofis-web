@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import isEmpty from 'lodash/isEmpty'
 
 import axios from '../lib/axios'
 import Nav from '../components/nav'
+import { setUserData } from '../lib/redux/slices/user'
 
 export default function Checkout() {
   const router = useRouter()
+  const dispatch = useDispatch()
   const [loading, setLoading] = useState(true)
   const subscription = useSelector((state) => state.subscription)
 
@@ -20,10 +22,12 @@ export default function Checkout() {
     )
       router.push('/payment')
     else setLoading(false)
-  })
+  }, [])
 
   const addSubscriber = async () => {
-    const subRes = await axios
+    setLoading(true)
+
+    const res = await axios
       .post('/subscribers', {
         ...subscription.subscriber,
         beneficiary: subscription.beneficiaries,
@@ -32,9 +36,22 @@ export default function Checkout() {
       })
       .catch((err) => {
         console.error(err)
+
+        setLoading(false)
       })
 
-    console.log(subRes)
+    const user = { ...res.data.users_permissions_user }
+    const subscriber = { ...res.data }
+
+    delete subscriber.users_permissions_user
+
+    user.subscriber = subscriber
+
+    dispatch(setUserData(user))
+
+    router.push({
+      pathname: '/profile',
+    })
   }
 
   return (
