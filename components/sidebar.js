@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
-import { MenuAlt2Icon, UserIcon } from '@heroicons/react/outline'
+import { useDispatch } from 'react-redux'
+import { MenuAlt2Icon, UserIcon, LogoutIcon } from '@heroicons/react/outline'
 import clsx from 'clsx'
 
+import { logOutUser } from '../lib/redux/slices/user'
 import styles from '../styles/sidebar.module.css'
 
 const paths = {
@@ -11,17 +13,28 @@ const paths = {
 
 export default function Sidebar() {
   const router = useRouter()
+  const dispatch = useDispatch()
   const [isExpanded, setIsExpanded] = useState(false)
 
   const toggleSideBar = () => {
     setIsExpanded((state) => !state)
   }
 
+  const logout = () => {
+    localStorage.removeItem('auth-token')
+
+    dispatch(logOutUser())
+
+    router.replace({
+      pathname: '/',
+    })
+  }
+
   return (
     <aside
       className={clsx(
         styles.sidebar,
-        'min-h-screen border-r border-gray-200 bg-white'
+        'min-h-screen border-r border-gray-200 flex flex-col bg-white'
       )}
     >
       <button
@@ -32,14 +45,14 @@ export default function Sidebar() {
         <MenuAlt2Icon className="h-6 w-6" aria-hidden="true" />
       </button>
 
-      <nav className="mt-5 px-2">
+      <nav className="mt-5 px-2 flex-1">
         <a
           href="/profile"
           className={clsx(
             router.pathname === paths.profile
               ? 'bg-gray-100 text-gray-900'
               : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
-            'group flex items-center px-2 py-2 text-sm font-medium rounded-md'
+            'px-2 py-2 group flex items-center text-sm font-medium rounded-md'
           )}
         >
           <UserIcon
@@ -47,13 +60,22 @@ export default function Sidebar() {
               router.pathname === paths.profile
                 ? 'text-gray-500'
                 : 'text-gray-400 group-hover:text-gray-500',
-              'flex-shrink-0 h-6 w-6'
+              'h-6 w-6 flex-shrink-0'
             )}
             aria-hidden="true"
           />
           {isExpanded && <span className="ml-3">Perfil</span>}
         </a>
       </nav>
+      <div className="px-2 pb-2">
+        <button
+          onClick={logout}
+          className="px-2 py-2 text-gray-600 group flex items-center text-sm font-medium rounded-md hover:bg-gray-50 hover:text-gray-900"
+        >
+          <LogoutIcon class="h-6 w-6 flex-shrink-0" />
+          {isExpanded && <span className="ml-3">Cerrar Sesión</span>}
+        </button>
+      </div>
     </aside>
   )
 }
