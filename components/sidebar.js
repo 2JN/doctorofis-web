@@ -72,7 +72,7 @@ export default function Sidebar() {
           onClick={logout}
           className="px-2 py-2 text-gray-600 group flex items-center text-sm font-medium rounded-md hover:bg-gray-50 hover:text-gray-900"
         >
-          <LogoutIcon class="h-6 w-6 flex-shrink-0" />
+          <LogoutIcon className="h-6 w-6 flex-shrink-0" />
           {isExpanded && <span className="ml-3">Cerrar Sesión</span>}
         </button>
       </div>

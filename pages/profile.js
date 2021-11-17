@@ -1,11 +1,45 @@
+import { useState } from 'react'
 import Head from 'next/head'
+import { useDispatch, useSelector } from 'react-redux'
+import { PencilAltIcon } from '@heroicons/react/outline'
 
+import axios from '../lib/axios'
 import Sidebar from '../components/sidebar'
-import { useSelector } from 'react-redux'
+import styles from '../styles/profile.module.css'
+import { setUserLoad, setUserData } from '../lib/redux/slices/user'
 
 export default function Profile() {
+  const dispatch = useDispatch()
+  const [isEditing, setEditing] = useState(false)
+
   const user = useSelector((state) => state.user)
   const { subscriber } = user.data
+
+  const toggleEdition = () => {
+    setEditing((value) => !value)
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    dispatch(setUserLoad(true))
+    const [firstName, lastName] = e.target.name.value.split(' ')
+
+    axios
+      .put(`/subscribers/${subscriber.id}`, {
+        firstName,
+        lastName,
+      })
+      .then((res) => {
+        dispatch(
+          setUserData({
+            ...user.data,
+            subscriber: res.data,
+          })
+        )
+      })
+
+    toggleEdition()
+  }
 
   return (
     <>
@@ -41,37 +75,96 @@ export default function Profile() {
         <main className="flex">
           <Sidebar />
 
-          <section className="py-2 px-4">
-            <h1 className="text-lg font-semibold">Perfil</h1>
+          <section className={styles.profileContainer}>
+            <form onSubmit={handleSubmit}>
+              <div className="flex items-center border-b border-gray-300 pb-3">
+                <h1 className="text-lg font-semibold">Perfil</h1>
 
-            <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
-              <h4 className="mt-8 text-md text-gray-500 sm:mt-5 sm:col-span-2">
-                Información Personal
-              </h4>
+                {isEditing ? (
+                  <>
+                    <button
+                      type="button"
+                      className="ml-auto px-2 pb-0.5"
+                      onClick={toggleEdition}
+                    >
+                      Cancel
+                    </button>
 
-              <div className="sm:col-span-1">
-                <dt className="text-sm font-medium text-gray-500">Nombre</dt>
-                <dd className="mt-1 text-sm capitalize text-gray-900">
-                  {subscriber?.firstName} {subscriber?.lastName}
-                </dd>
+                    <button type="submit" class="ml-2 pb-0.5">
+                      Save
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    class="ml-auto px-0.5"
+                    onClick={toggleEdition}
+                  >
+                    <PencilAltIcon className="w-6 h-6" aria-hidden="true" />
+                  </button>
+                )}
               </div>
 
-              <div className="sm:col-span-1">
-                <dt className="text-sm font-medium text-gray-500">Email</dt>
-                <dd className="mt-1 text-sm capitalize text-gray-900">
-                  {user.data.email}
-                </dd>
-              </div>
+              <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                <h4 className="mt-8 text-md text-gray-500 sm:mt-5 sm:col-span-2">
+                  Información Personal
+                </h4>
 
-              <div className="sm:col-span-1">
-                <dt className="text-sm font-medium text-gray-500">
-                  Tipo de Plan
-                </dt>
-                <dd className="mt-1 text-sm capitalize text-gray-900">
-                  PENDING
-                </dd>
-              </div>
-            </dl>
+                {isEditing ? (
+                  <>
+                    <div>
+                      <label>Nombre</label>
+                      <input
+                        type="text"
+                        name="name"
+                        defaultValue={`${subscriber?.firstName} ${subscriber?.lastName}`}
+                      />
+                    </div>
+
+                    <div>
+                      <label>Email</label>
+                      <input
+                        type="email"
+                        name="email"
+                        defaultValue={`${user.data.email}`}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <dt>Nombre</dt>
+                      <dd>
+                        {subscriber?.firstName} {subscriber?.lastName}
+                      </dd>
+                    </div>
+
+                    <div>
+                      <dt>Email</dt>
+                      <dd>{user.data.email}</dd>
+                    </div>
+
+                    <div>
+                      <dt>Tipo de Plan</dt>
+                      <dd>PENDING</dd>
+                    </div>
+                  </>
+                )}
+
+                <h4 className="mt-8 text-md text-gray-500 sm:mt-5 sm:col-span-2">
+                  Beneficiarios
+                </h4>
+
+                {subscriber?.beneficiary?.forEach((beneficiary) => (
+                  <div>
+                    <dt>Nombre</dt>
+                    <dd>
+                      {beneficiary?.firstName} {beneficiary?.lastName}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </form>
           </section>
         </main>
       )}

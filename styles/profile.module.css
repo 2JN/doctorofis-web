@@ -1,0 +1,26 @@
+.profileContainer {
+  @apply w-full py-2 px-4;
+}
+
+.profileContainer dt,
+.profileContainer label {
+  @apply block text-sm font-medium text-gray-500;
+}
+
+.profileContainer dd {
+  @apply mt-1 text-sm capitalize text-gray-900;
+}
+
+.profileContainer input {
+  @apply block w-full mt-1 text-sm border-gray-300 rounded-md shadow-sm;
+  @apply focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm;
+}
+
+.profileContainer button {
+  @apply border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700;
+  @apply hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500;
+}
+
+.profileContainer button[type='submit'] {
+  @apply px-2 text-white bg-indigo-600 hover:bg-indigo-700;
+}
