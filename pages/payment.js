@@ -1,83 +1,79 @@
 import { useEffect, useState } from 'react'
+import Script from 'next/script'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useDispatch, useSelector } from 'react-redux'
-import isEmpty from 'lodash/isEmpty'
 import clsx from 'clsx'
 
+import axios from '../lib/axios'
+import { setUserData } from '../lib/redux/slices/user'
 import Nav from '../components/nav'
 import styles from '../styles/payment.module.css'
-import { setPaymentCode } from '../lib/redux/slices/subscription'
 
 export default function Payment() {
+  const [loading, setLoading] = useState(true)
   const router = useRouter()
-  const [state, setState] = useState({
-    loading: true,
-    data: {},
-  })
   const dispatch = useDispatch()
   const subscription = useSelector((state) => state.subscription)
+
+  const addSubscriber = async (subscriptionID) => {
+    setLoading(true)
+
+    const res = await axios
+      .post('/subscribers', {
+        ...subscription.subscriber,
+        beneficiary: subscription.beneficiaries,
+        productCode: subscription.plan.productCode,
+        subscriptionID,
+      })
+      .catch((err) => {
+        console.error(err)
+
+        setLoading(false)
+      })
+
+    const user = { ...res.data.users_permissions_user }
+    const subscriber = { ...res.data }
+
+    delete subscriber.users_permissions_user
+
+    user.subscriber = subscriber
+
+    dispatch(setUserData(user))
+
+    router.push({
+      pathname: '/profile',
+    })
+  }
+
+  const onPaypalLoad = () => {
+    setLoading(false)
+
+    paypal
+      .Buttons({
+        createSubscription: function (data, actions) {
+          return actions.subscription.create({
+            plan_id: 'P-1V566755XY045873BMJILIKY', // Creates the subscription
+          })
+        },
+        onApprove: function (data, actions) {
+          addSubscriber(data.subscriptionID)
+        },
+      })
+      .render('#paypal-button-container')
+  }
 
   useEffect(() => {
     if (isEmpty(subscription.plan) || isEmpty(subscription.subscriber))
       router.push('/signup')
-    else {
-      setState((prevState) => ({
-        ...prevState,
-        loading: false,
-      }))
-
-      const jsPaymentClient = new TwoPayClient(
-        process.env.NEXT_PUBLIC_2CHECKOUT_MERCHANT_CODE
-      )
-      jsPaymentClient.setup.setLanguage('es')
-
-      const component = jsPaymentClient.components.create('card', styles2payjs)
-      component.mount(`#${styles.cardElement}`)
-
-      document
-        .getElementById('payment-form')
-        ?.addEventListener('submit', async (event) => {
-          event.preventDefault()
-          setState((prevState) => ({
-            ...prevState,
-            loading: true,
-          }))
-
-          const billingDetails = {
-            name: document.querySelector('#name').value,
-          }
-
-          const res = await jsPaymentClient.tokens
-            .generate(component, billingDetails)
-            .catch((err) => {
-              console.error(err)
-              setState((prevState) => ({
-                ...prevState,
-                loading: false,
-              }))
-
-              // TODO: show errors
-            })
-
-          dispatch(setPaymentCode(res.token))
-          router.push('/checkout')
-        })
-    }
   }, [])
-
-  const handleChange = (e) => {
-    setState((prevState) => ({
-      ...prevState,
-      data: {
-        ...prevState.data,
-        [e.target.name]: e.target.value,
-      },
-    }))
-  }
 
   return (
     <>
+      <Script
+        src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&vault=true&intent=subscription`}
+        onLoad={onPaypalLoad}
+      />
       <Nav />
 
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -86,7 +82,7 @@ export default function Payment() {
             Información de Pago
           </h3>
 
-          {state.loading && (
+          {loading && (
             <div className="flex justify-center">
               <svg
                 className="w-16 md:w-24 mt-12 text-gray-800 animate-spin"
@@ -114,26 +110,12 @@ export default function Payment() {
           <form
             type="post"
             id="payment-form"
-            className={clsx({ hidden: state.loading }, 'pt-8 sm:pt-5')}
+            className={clsx({ hidden: loading }, 'pt-8 sm:pt-5')}
           >
-            <div className="form-group">
-              <label htmlFor="name" className="block text-sm">
-                Nombre
-              </label>
-              <input
-                id="name"
-                type="text"
-                name="name"
-                onChange={handleChange}
-                className="w-full mt-3 rounded-sm"
-                required
-              />
-            </div>
-
-            <div id={styles.cardElement} />
+            <div id="paypal-button-container" />
 
             <div className="pt-5 flex justify-end">
-              <Link href="/signup">
+              <Link href="/checkout">
                 <a className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Volver
                 </a>
@@ -151,116 +133,4 @@ export default function Payment() {
       </main>
     </>
   )
-}
-
-const styles2payjs = {
-  fontFamily:
-    'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
-  margin: '0',
-  maxWidth: '100%',
-  '*': {
-    boxSizing: 'border-box',
-  },
-  form: {
-    overflow: 'hidden',
-    paddingRight: '1px',
-    paddingLeft: '1px',
-  },
-  label: {
-    fontSize: '0.875rem',
-    lineHeight: '1.25rem',
-  },
-  '.row': {
-    display: 'flex',
-    marginTop: '0.75rem',
-    marginRight: '-0.75rem',
-  },
-  '.col': {
-    width: '100%',
-    maxWidth: '100%',
-    flex: '1 1 auto',
-    marginRight: '0.75rem',
-  },
-  '.error-icon': {
-    display: 'none',
-  },
-  '.lock-icon': {
-    display: 'none',
-  },
-  '.input-wrapper': {
-    marginTop: '0.75rem',
-    position: 'relative',
-    paddingBottom: '1px',
-  },
-  input: {
-    border: '1px solid #6b7280',
-    borderRadius: '0.125rem',
-    padding: '0.5rem 0.75rem',
-    width: '100%',
-    fontSize: '1rem',
-    lineHeight: '1.5rem',
-    outline: 0,
-  },
-  'input:focus': {
-    outline: '2px solid transparent',
-    outlineOffset: '2px',
-    boxShadow:
-      'rgb(255, 255, 255) 0px 0px 0px 0px, rgb(37, 99, 235) 0px 0px 0px 1px, rgba(0, 0, 0, 0) 0px 0px 0px 0px',
-    borderColor: '#2563eb',
-  },
-  '.validation-message': {
-    fontSize: '0.75rem',
-    lineHeight: '1rem',
-  },
-  '.lock-icon': {
-    display: 'none',
-  },
-  '.valid-icon': {
-    display: 'none',
-  },
-  '.error-icon': {
-    display: 'none',
-  },
-  '.card-icon': {
-    top: 'calc(50% - 10px)',
-    left: '10px',
-    display: 'none',
-  },
-  '.is-empty .card-icon': {
-    display: 'block',
-  },
-  '.is-focused .card-icon': {
-    display: 'none',
-  },
-  '.card-type-icon': {
-    right: '30px',
-    display: 'block',
-  },
-  '.card-type-icon.visa': {
-    top: 'calc(50% - 14px)',
-  },
-  '.card-type-icon.mastercard': {
-    top: 'calc(50% - 14.5px)',
-  },
-  '.card-type-icon.amex': {
-    top: 'calc(50% - 14px)',
-  },
-  '.card-type-icon.discover': {
-    top: 'calc(50% - 14px)',
-  },
-  '.card-type-icon.jcb': {
-    top: 'calc(50% - 14px)',
-  },
-  '.card-type-icon.dankort': {
-    top: 'calc(50% - 14px)',
-  },
-  '.card-type-icon.cartebleue': {
-    top: 'calc(50% - 14px)',
-  },
-  '.card-type-icon.diners': {
-    top: 'calc(50% - 14px)',
-  },
-  '.card-type-icon.elo': {
-    top: 'calc(50% - 14px)',
-  },
 }

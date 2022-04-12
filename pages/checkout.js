@@ -4,9 +4,7 @@ import { useRouter } from 'next/router'
 import { useDispatch, useSelector } from 'react-redux'
 import isEmpty from 'lodash/isEmpty'
 
-import axios from '../lib/axios'
 import Nav from '../components/nav'
-import { setUserData } from '../lib/redux/slices/user'
 
 export default function Checkout() {
   const router = useRouter()
@@ -23,36 +21,6 @@ export default function Checkout() {
       router.push('/payment')
     else setLoading(false)
   }, [])
-
-  const addSubscriber = async () => {
-    setLoading(true)
-
-    const res = await axios
-      .post('/subscribers', {
-        ...subscription.subscriber,
-        beneficiary: subscription.beneficiaries,
-        eesToken: subscription.paymentCode,
-        productCode: subscription.plan.productCode,
-      })
-      .catch((err) => {
-        console.error(err)
-
-        setLoading(false)
-      })
-
-    const user = { ...res.data.users_permissions_user }
-    const subscriber = { ...res.data }
-
-    delete subscriber.users_permissions_user
-
-    user.subscriber = subscriber
-
-    dispatch(setUserData(user))
-
-    router.push({
-      pathname: '/profile',
-    })
-  }
 
   return (
     <>
@@ -206,17 +174,16 @@ export default function Checkout() {
               </dl>
 
               <div className="pt-5 flex justify-end">
-                <Link href="/payment">
+                <Link href="/beneficiaries">
                   <a className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Volver
                   </a>
                 </Link>
-                <button
-                  className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  onClick={addSubscriber}
-                >
-                  Suscribirme
-                </button>
+                <Link href="/payment">
+                  <a className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Realizar Pago
+                  </a>
+                </Link>
               </div>
             </>
           )}
