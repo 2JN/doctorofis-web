@@ -10,7 +10,7 @@ export default function Beneficiaries() {
   const router = useRouter()
   const dispatch = useDispatch()
   const plan = useSelector((state) => state.subscription.plan)
-  const beneficiaries = range(+plan.productVersion)
+  const beneficiaries = range(plan.beneficiaries)
 
   const handleSubmit = (event) => {
     event.preventDefault()
@@ -25,7 +25,7 @@ export default function Beneficiaries() {
       )
     )
 
-    router.push('/payment')
+    router.push('/checkout')
   }
 
   return (

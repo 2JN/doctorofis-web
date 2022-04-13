@@ -13,12 +13,8 @@ export default function Checkout() {
   const subscription = useSelector((state) => state.subscription)
 
   useEffect(() => {
-    if (
-      isEmpty(subscription.plan) ||
-      isEmpty(subscription.subscriber) ||
-      !subscription.paymentCode
-    )
-      router.push('/payment')
+    if (isEmpty(subscription.plan) || isEmpty(subscription.subscriber))
+      router.push('/subscriber')
     else setLoading(false)
   }, [])
 

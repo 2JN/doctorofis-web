@@ -3,6 +3,7 @@ import Script from 'next/script'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useDispatch, useSelector } from 'react-redux'
+import isEmpty from 'lodash/isEmpty'
 import clsx from 'clsx'
 
 import axios from '../lib/axios'
@@ -11,7 +12,7 @@ import Nav from '../components/nav'
 import styles from '../styles/payment.module.css'
 
 export default function Payment() {
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
   const dispatch = useDispatch()
   const subscription = useSelector((state) => state.subscription)
@@ -22,8 +23,8 @@ export default function Payment() {
     const res = await axios
       .post('/subscribers', {
         ...subscription.subscriber,
+        planID: subscription.plan.id,
         beneficiary: subscription.beneficiaries,
-        productCode: subscription.plan.productCode,
         subscriptionID,
       })
       .catch((err) => {
@@ -47,13 +48,11 @@ export default function Payment() {
   }
 
   const onPaypalLoad = () => {
-    setLoading(false)
-
     paypal
       .Buttons({
         createSubscription: function (data, actions) {
           return actions.subscription.create({
-            plan_id: 'P-1V566755XY045873BMJILIKY', // Creates the subscription
+            plan_id: subscription.plan.id,
           })
         },
         onApprove: function (data, actions) {
@@ -66,6 +65,7 @@ export default function Payment() {
   useEffect(() => {
     if (isEmpty(subscription.plan) || isEmpty(subscription.subscriber))
       router.push('/signup')
+    else if (window.paypal) onPaypalLoad()
   }, [])
 
   return (
@@ -107,28 +107,17 @@ export default function Payment() {
             </div>
           )}
 
-          <form
-            type="post"
-            id="payment-form"
-            className={clsx({ hidden: loading }, 'pt-8 sm:pt-5')}
-          >
+          <div className="pt-8 sm:pt-5">
             <div id="paypal-button-container" />
 
-            <div className="pt-5 flex justify-end">
+            <div className={clsx({ hidden: loading }, 'pt-5 flex justify-end')}>
               <Link href="/checkout">
                 <a className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   Volver
                 </a>
               </Link>
-
-              <button
-                type="submit"
-                className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Aceptar
-              </button>
             </div>
-          </form>
+          </div>
         </div>
       </main>
     </>

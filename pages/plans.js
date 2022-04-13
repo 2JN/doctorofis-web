@@ -20,10 +20,10 @@ export default function Plans() {
   const handleClickPlan = (plan) => () => {
     dispatch(
       setPlan({
-        name: plan.Translations.ES.Name,
-        productCode: plan.ProductCode,
-        productVersion: plan.ProductVersion,
-        description: plan.Translations.ES.Description,
+        id: plan.paypalID,
+        name: plan.name,
+        description: plan.description,
+        beneficiaries: plan.beneficiaries,
       })
     )
 
@@ -32,32 +32,28 @@ export default function Plans() {
     })
   }
 
-  useEffect(async () => {
-    const res = await axios.get('/products').catch((err) => {
-      console.error(err)
+  useEffect(() => {
+    async function fetchProducts() {
+      const res = await axios.get('/plans').catch((err) => {
+        console.error(err)
+
+        setPlans((state) => ({
+          ...state,
+          error: err,
+          loading: false,
+        }))
+
+        // TODO: show error notification
+      })
 
       setPlans((state) => ({
         ...state,
-        error: err,
         loading: false,
+        data: res.data,
       }))
+    }
 
-      // TODO: show error notification
-    })
-
-    res.data.Items.forEach((item) => {
-      item.Translations = item.Translations.reduce((tally, trans) => {
-        tally[trans.Language] = trans
-
-        return tally
-      }, {})
-    })
-
-    setPlans((state) => ({
-      ...state,
-      loading: false,
-      data: res.data.Items,
-    }))
+    fetchProducts()
   }, [])
 
   return (
@@ -103,23 +99,22 @@ export default function Plans() {
             <div className="mt-12 space-y-4 sm:mt-16 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-6 lg:max-w-4xl lg:mx-auto xl:max-w-none xl:mx-0 xl:grid-cols-3">
               {plans.data.map((plan) => (
                 <div
-                  key={plan.ProductCode}
+                  key={plan.id}
                   className="border border-gray-200 rounded-lg shadow-sm divide-y divide-gray-200"
                 >
                   <div className="p-6">
                     <h2 className="text-lg leading-6 font-medium capitalize text-gray-900">
-                      {plan.Translations.ES.Name}
+                      {plan.name}
                     </h2>
                     <div
                       className="mt-4 text-sm text-gray-500"
                       dangerouslySetInnerHTML={{
-                        __html: plan.Translations.ES.Description,
+                        __html: plan.description,
                       }}
                     />
                     <p className="mt-8">
                       <span className="text-4xl font-extrabold text-gray-900">
-                        Q
-                        {plan.PricingConfigurations[0].Prices.Regular[0].Amount}
+                        ${plan.cost}
                       </span>{' '}
                       <span className="text-base font-medium text-gray-500">
                         /mes
@@ -129,7 +124,7 @@ export default function Plans() {
                       onClick={handleClickPlan(plan)}
                       className="mt-8 block w-full bg-gray-800 border border-gray-800 rounded-md py-2 text-sm font-semibold text-white text-center capitalize hover:bg-gray-900"
                     >
-                      inscribite {plan.ProductName}
+                      inscribite {plan.name}
                     </button>
                   </div>
                   <div className="pt-6 pb-8 px-6">
@@ -139,7 +134,7 @@ export default function Plans() {
                     <div
                       className="mt-3"
                       dangerouslySetInnerHTML={{
-                        __html: plan.Translations.ES.LongDescription,
+                        __html: plan.description,
                       }}
                     />
                   </div>

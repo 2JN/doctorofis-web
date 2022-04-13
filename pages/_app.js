@@ -1,11 +1,15 @@
 import { useEffect } from 'react'
 import { Provider } from 'react-redux'
+import { persistStore } from 'redux-persist'
+import { PersistGate } from 'redux-persist/integration/react'
 
 import axios from '../lib/axios'
 import { setUserData, setUserLoad } from '../lib/redux/slices/user'
 
 import store from '../lib/redux/store'
 import '../styles/globals.css'
+
+const persistor = persistStore(store)
 
 function MyApp({ Component, pageProps }) {
   useEffect(() => {
@@ -46,7 +50,9 @@ function MyApp({ Component, pageProps }) {
 
   return (
     <Provider store={store}>
-      <Component {...pageProps} />
+      <PersistGate loading={null} persistor={persistor}>
+        <Component {...pageProps} />
+      </PersistGate>
     </Provider>
   )
 }

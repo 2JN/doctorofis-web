@@ -90,14 +90,14 @@ export default function Profile() {
                       Cancel
                     </button>
 
-                    <button type="submit" class="ml-2 pb-0.5">
+                    <button type="submit" className="ml-2 pb-0.5">
                       Save
                     </button>
                   </>
                 ) : (
                   <button
                     type="button"
-                    class="ml-auto px-0.5"
+                    className="ml-auto px-0.5"
                     onClick={toggleEdition}
                   >
                     <PencilAltIcon className="w-6 h-6" aria-hidden="true" />
